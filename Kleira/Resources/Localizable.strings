@@ -1,0 +1,44 @@
+// Settings
+"Settings" = "Settings";
+"Appearance" = "Appearance";
+"Haptic Feedback" = "Haptic Feedback";
+"Sound Effects" = "Sound Effects";
+"Credits" = "Credits";
+"About" = "About";
+"More Apps" = "More Apps";
+"Twitter" = "Twitter";
+"Contact" = "Contact";
+"Kleira" = "Kleira";
+
+// Developer Settings
+"Developer Settings" = "Developer Settings";
+"App Information" = "App Information";
+"Version" = "Version";
+"Build" = "Build";
+"Device" = "Device";
+"System" = "System";
+"App Icons" = "App Icons";
+"Default" = "Default";
+"Alternative" = "Alternative";
+
+// About
+"Legal" = "Legal";
+"Privacy Policy" = "Privacy Policy";
+"Terms of Use" = "Terms of Use";
+"App Description" = "Kleira is a powerful task management app designed to help you stay organized and productive.";
+
+// Credits
+"Development" = "Development";
+"Special Thanks" = "Special Thanks";
+"Family & Friends" = "Family & Friends";
+"Beta Testers" = "Beta Testers";
+"SwiftUI Community" = "SwiftUI Community";
+
+// Appearance
+"Use System Theme" = "Use System Theme";
+"Dark Mode" = "Dark Mode";
+
+// CipherRowView
+"Sample Cipher" = "Sample Cipher";
+"created" = "created";
+  
