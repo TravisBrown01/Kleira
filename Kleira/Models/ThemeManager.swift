@@ -6,6 +6,7 @@ class ThemeManager: ObservableObject {
     @AppStorage("selectedTheme") private(set) var selectedTheme: String = "system" {
         didSet {
             updateColorScheme()
+            applyThemeToAllWindows()
         }
     }
     @AppStorage("selectedColorTheme") private var selectedColorTheme: String = "blue"
@@ -16,37 +17,14 @@ class ThemeManager: ObservableObject {
     init() {
         updateColorScheme()
         updateAccentColor()
-        applyInitialTheme()
-    }
-    
-    private func applyInitialTheme() {
-        // Get all scenes and apply theme to each window
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .forEach { scene in
-                scene.windows.forEach { window in
-                    applyTheme(to: window)
-                }
-            }
+        applyThemeToAllWindows()
     }
     
     func setTheme(_ theme: String) {
         selectedTheme = theme.lowercased()
-        
-        // Apply to all windows in all scenes
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .forEach { scene in
-                scene.windows.forEach { window in
-                    applyTheme(to: window)
-                }
-            }
-        
-        // Post notification for views to update
-        NotificationCenter.default.post(name: NSNotification.Name("ThemeDidChange"), object: nil)
     }
     
-    private func applyTheme(to window: UIWindow) {
+    private func applyThemeToAllWindows() {
         let style: UIUserInterfaceStyle = {
             switch selectedTheme {
             case "light": return .light
@@ -55,13 +33,29 @@ class ThemeManager: ObservableObject {
             }
         }()
         
-        // Apply the style changes within the main thread
-        DispatchQueue.main.async {
-            UIView.animate(withDuration: 0.3) {
+        // Apply to all scenes and windows
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            for window in windowScene.windows {
                 window.overrideUserInterfaceStyle = style
                 window.rootViewController?.setNeedsStatusBarAppearanceUpdate()
-                window.subviews.forEach { $0.setNeedsDisplay() }
+                
+                // Force window update
+                window.setNeedsLayout()
+                window.layoutIfNeeded()
+                
+                // Force view update
+                if let rootView = window.rootViewController?.view {
+                    rootView.setNeedsLayout()
+                    rootView.layoutIfNeeded()
+                    rootView.setNeedsDisplay()
+                }
             }
+        }
+        
+        // Force SwiftUI update
+        DispatchQueue.main.async { [weak self] in
+            self?.objectWillChange.send()
         }
     }
     

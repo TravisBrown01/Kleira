@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UIKit
 
 @main
 struct KleiraApp: App {
@@ -16,18 +15,10 @@ struct KleiraApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
-                ZStack {
-                    BackgroundGradientView()
-                    ContentView()
-                }
-                .environmentObject(themeManager)
-                .preferredColorScheme(themeManager.colorScheme)
-                .tint(themeManager.accentColor)
-                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ThemeDidChange"))) { _ in
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        themeManager.objectWillChange.send()
-                    }
-                }
+                ContentView()
+                    .environmentObject(themeManager)
+                    .preferredColorScheme(themeManager.colorScheme)
+                    .tint(themeManager.accentColor)
                 
                 if showLaunchScreen {
                     LaunchScreen()
@@ -44,14 +35,12 @@ struct KleiraApp: App {
                         }
                 }
             }
-            .environmentObject(themeManager)
         }
     }
 }
 
 struct BackgroundGradientView: View {
     @Environment(\.colorScheme) private var colorScheme
-    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         LinearGradient(
