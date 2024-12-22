@@ -20,22 +20,6 @@ struct KleiraApp: App {
             .environmentObject(themeManager)
             .preferredColorScheme(themeManager.colorScheme)
             .tint(themeManager.accentColor)
-            .onChange(of: themeManager.colorScheme) { oldScheme, newScheme in
-                // Force immediate UI update for theme changes
-                UIApplication.shared.connectedScenes
-                    .compactMap { $0 as? UIWindowScene }
-                    .forEach { windowScene in
-                        windowScene.windows.forEach { window in
-                            window.overrideUserInterfaceStyle = {
-                                switch themeManager.selectedTheme {
-                                case "light": return .light
-                                case "dark": return .dark
-                                default: return .unspecified
-                                }
-                            }()
-                        }
-                    }
-            }
         }
     }
 }

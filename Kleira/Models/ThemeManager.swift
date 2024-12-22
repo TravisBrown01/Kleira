@@ -11,34 +11,46 @@ class ThemeManager: ObservableObject {
     init() {
         updateColorScheme()
         updateAccentColor()
-        
-        // Listen for system appearance changes
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(systemThemeChanged),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
+        setInitialTheme()
     }
     
     func setTheme(_ theme: String) {
-        selectedTheme = theme
-        updateColorScheme()
+        withAnimation(.easeInOut(duration: 0.3)) {
+            selectedTheme = theme.lowercased()
+            updateColorScheme()
+            
+            // Immediately update window style
+            setWindowStyle(for: selectedTheme)
+        }
+    }
+    
+    private func setInitialTheme() {
+        setWindowStyle(for: selectedTheme)
+    }
+    
+    private func setWindowStyle(for theme: String) {
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = scene.windows.first else { return }
         
-        // Immediately update all windows
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .forEach { windowScene in
-                windowScene.windows.forEach { window in
-                    window.overrideUserInterfaceStyle = {
-                        switch theme {
-                        case "light": return .light
-                        case "dark": return .dark
-                        default: return .unspecified
-                        }
-                    }()
-                }
+        let style: UIUserInterfaceStyle = {
+            switch theme {
+            case "light": return .light
+            case "dark": return .dark
+            default: return .unspecified
             }
+        }()
+        
+        window.overrideUserInterfaceStyle = style
+    }
+    
+    private func updateColorScheme() {
+        colorScheme = {
+            switch selectedTheme {
+            case "light": return .light
+            case "dark": return .dark
+            default: return nil
+            }
+        }()
     }
     
     func setColorTheme(_ theme: String) {
@@ -46,25 +58,8 @@ class ThemeManager: ObservableObject {
         updateAccentColor()
     }
     
-    @objc private func systemThemeChanged() {
-        updateColorScheme()
-    }
-    
-    private func updateColorScheme() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            switch selectedTheme {
-            case "light":
-                colorScheme = .light
-            case "dark":
-                colorScheme = .dark
-            default:
-                colorScheme = nil
-            }
-        }
-    }
-    
     private func updateAccentColor() {
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation {
             switch selectedColorTheme {
             case "purple": accentColor = .purple
             case "green": accentColor = .green

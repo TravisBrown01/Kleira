@@ -26,20 +26,22 @@ struct AppearanceView: View {
         List {
             Section("Theme") {
                 ForEach(themes, id: \.0) { theme in
-                    HStack {
-                        Label(theme.0, systemImage: theme.1)
-                        Spacer()
-                        if themeManager.selectedTheme == theme.0.lowercased() {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(themeManager.accentColor)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
+                    Button {
                         withAnimation {
-                            themeManager.setTheme(theme.0.lowercased())
+                            themeManager.setTheme(theme.0)
                         }
+                    } label: {
+                        HStack {
+                            Label(theme.0, systemImage: theme.1)
+                            Spacer()
+                            if themeManager.selectedTheme == theme.0.lowercased() {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(themeManager.accentColor)
+                            }
+                        }
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
             }
             
