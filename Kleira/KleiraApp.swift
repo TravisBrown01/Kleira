@@ -11,23 +11,40 @@ import UIKit
 @main
 struct KleiraApp: App {
     @StateObject private var themeManager = ThemeManager()
+    @State private var showLaunchScreen = true
     
     var body: some Scene {
         WindowGroup {
             ZStack {
-                BackgroundGradientView()
-                ContentView()
-            }
-            .environmentObject(themeManager)
-            .preferredColorScheme(themeManager.colorScheme)
-            .tint(themeManager.accentColor)
-            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ThemeDidChange"))) { _ in
-                // Force view refresh
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    // This will trigger a view update
-                    themeManager.objectWillChange.send()
+                ZStack {
+                    BackgroundGradientView()
+                    ContentView()
+                }
+                .environmentObject(themeManager)
+                .preferredColorScheme(themeManager.colorScheme)
+                .tint(themeManager.accentColor)
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ThemeDidChange"))) { _ in
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        themeManager.objectWillChange.send()
+                    }
+                }
+                
+                if showLaunchScreen {
+                    LaunchScreen()
+                        .environmentObject(themeManager)
+                        .transition(.opacity)
+                        .zIndex(1)
+                        .onAppear {
+                            // Hide launch screen after animations
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                                withAnimation(.easeOut(duration: 0.5)) {
+                                    showLaunchScreen = false
+                                }
+                            }
+                        }
                 }
             }
+            .environmentObject(themeManager)
         }
     }
 }
