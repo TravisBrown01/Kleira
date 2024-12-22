@@ -1,8 +1,13 @@
 import SwiftUI
+import UIKit
 
 @MainActor
 class ThemeManager: ObservableObject {
-    @AppStorage("selectedTheme") private(set) var selectedTheme: String = "system"
+    @AppStorage("selectedTheme") private(set) var selectedTheme: String = "system" {
+        didSet {
+            updateColorScheme()
+        }
+    }
     @AppStorage("selectedColorTheme") private var selectedColorTheme: String = "blue"
     
     @Published var colorScheme: ColorScheme?
@@ -11,36 +16,53 @@ class ThemeManager: ObservableObject {
     init() {
         updateColorScheme()
         updateAccentColor()
-        setInitialTheme()
+        applyInitialTheme()
+    }
+    
+    private func applyInitialTheme() {
+        // Get all scenes and apply theme to each window
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .forEach { scene in
+                scene.windows.forEach { window in
+                    applyTheme(to: window)
+                }
+            }
     }
     
     func setTheme(_ theme: String) {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            selectedTheme = theme.lowercased()
-            updateColorScheme()
-            
-            // Immediately update window style
-            setWindowStyle(for: selectedTheme)
-        }
-    }
-    
-    private func setInitialTheme() {
-        setWindowStyle(for: selectedTheme)
-    }
-    
-    private func setWindowStyle(for theme: String) {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = scene.windows.first else { return }
+        selectedTheme = theme.lowercased()
         
+        // Apply to all windows in all scenes
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .forEach { scene in
+                scene.windows.forEach { window in
+                    applyTheme(to: window)
+                }
+            }
+        
+        // Post notification for views to update
+        NotificationCenter.default.post(name: NSNotification.Name("ThemeDidChange"), object: nil)
+    }
+    
+    private func applyTheme(to window: UIWindow) {
         let style: UIUserInterfaceStyle = {
-            switch theme {
+            switch selectedTheme {
             case "light": return .light
             case "dark": return .dark
             default: return .unspecified
             }
         }()
         
-        window.overrideUserInterfaceStyle = style
+        // Apply the style changes within the main thread
+        DispatchQueue.main.async {
+            UIView.animate(withDuration: 0.3) {
+                window.overrideUserInterfaceStyle = style
+                window.rootViewController?.setNeedsStatusBarAppearanceUpdate()
+                window.subviews.forEach { $0.setNeedsDisplay() }
+            }
+        }
     }
     
     private func updateColorScheme() {

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 @main
 struct KleiraApp: App {
@@ -20,12 +21,20 @@ struct KleiraApp: App {
             .environmentObject(themeManager)
             .preferredColorScheme(themeManager.colorScheme)
             .tint(themeManager.accentColor)
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ThemeDidChange"))) { _ in
+                // Force view refresh
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    // This will trigger a view update
+                    themeManager.objectWillChange.send()
+                }
+            }
         }
     }
 }
 
 struct BackgroundGradientView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
         LinearGradient(
@@ -42,6 +51,5 @@ struct BackgroundGradientView: View {
             endPoint: .bottomTrailing
         )
         .ignoresSafeArea()
-        .animation(.easeInOut(duration: 0.3), value: colorScheme)
     }
 }
